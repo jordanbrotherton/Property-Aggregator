@@ -90,6 +90,8 @@ export default function Home() {
   const [isLoading, setLoading] = useState(true);
   const [bCPerf, setBCPerf] = useState(0);
   const [bFPerf, setBFPerf] = useState(0);
+  const [propAvgPrice, setPropAvgPrice] = useState(BigInt(0));
+  const [propAvgSize, setPropAvgSize] = useState(BigInt(0));
   
   let bPlus = GetData('./NAL11F202501.csv');
   if(loaded && isLoading) 
@@ -99,6 +101,8 @@ export default function Home() {
       setCurrPage(0); 
       setMPage(maxPage);
       setBCPerf(bCreatePerf / 1000);
+      setPropAvgPrice(bPlus.get_price_average());
+      setPropAvgSize(bPlus.get_land_average());
     }
 
   return (
@@ -112,14 +116,14 @@ export default function Home() {
             <h1 className="max-w-m text-4xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">Stats</h1>
             <p><b>B+ Creation Time: </b>{bCPerf} s</p>
             <p><b>B+ Filter Time: </b>{bFPerf} ms</p>
-            <p><b>Average Size:</b> TEMP SQFT</p>
-            <p><b>Average Price:</b> $TEMP</p>
+            <p><b>Average Price: </b>${propAvgPrice}</p>
+            <p><b>Average Size: </b>{propAvgSize} ft^2</p>
             { /* TODO - Turn the input box to a slider? */ }
             <h1 className="max-w-m text-4xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">Filters</h1>
             <p className="my-2"><b>Minimum Price: </b></p><input type="number" defaultValue={0} onChange={(event) => minPrice = parseInt(event.target.value)} name="minPriceBox" className="bg-white dark:bg-zinc-700"></input>
             <p className="my-2"><b>Minimum Size: </b></p><input type="number" defaultValue={0} onChange={(event) => minSize = parseInt(event.target.value)} name="minSizeBox" className="bg-white dark:bg-zinc-700"></input>
             <br></br>
-            <button type="button" onClick={() => {setProperties(FilterData(minPrice, minSize, bPlus)); setCurrPage(0); setMPage(maxPage); setBFPerf(bFilterPerf); }}className="rounded-xl my-2 p-4 px-8 bg-gray-200 text-black dark:text-zinc-50 dark:bg-gray-500">Filter</button>
+            <button type="button" onClick={() => {setProperties(FilterData(minPrice, minSize, bPlus)); setCurrPage(0); setMPage(maxPage); setBFPerf(bFilterPerf); setPropAvgPrice(bPlus.get_price_average()); setPropAvgSize(bPlus.get_land_average()); }}className="rounded-xl my-2 p-4 px-8 bg-gray-200 text-black dark:text-zinc-50 dark:bg-gray-500">Filter</button>
             <br></br>
             <div className="flex flex-nowrap items-center">
               <button type="button" onClick={() => {if(currPage > 0){ setCurrPage(currPage - 1) }}}className="rounded-xl my-2 p-2 px-8 mr-2 bg-gray-200 text-black dark:text-zinc-50 dark:bg-gray-500">&lt;</button>
@@ -132,7 +136,7 @@ export default function Home() {
           <main className="grid grid-cols-3 max-h-[calc(100vh-104px)]">
             {/* TODO - Placeholders until we can map our created data types. */}
             {isLoading && <h1>Loading...</h1>}
-            {properties.filter((item, index) => {return (index < ((currPage + 1) * 100) && index > (currPage * 100)) }).map((p, i) => (<PropertyView key={i} property={p}/>))}
+            {properties.filter((item, index) => {return (index <= ((currPage + 1) * 100) && index >= (currPage * 100)) }).map((p, i) => (<PropertyView key={i} property={p}/>))}
           </main>
         </div>
       </div>

@@ -7,10 +7,10 @@ export class Property{
 
     //Properties of each Node
     address: string;
-    price: number;
-    land_value: number;
-    land_size: number;
-    sale_value: number;
+    price: number = 0;
+    land_value: number = 0;
+    land_size: number = 0;
+    sale_value: number = 0;
 
     constructor(add: string, p: number, l_val: number, l_s: number, s_v: number) {
         this.address = add;
@@ -44,8 +44,8 @@ class B_Plus_Tree_Node{
 export class B_Plus_Tree {
 
     private root: B_Plus_Tree_Node = null;
-    private price_average: number = 0;
-    private land_average: number = 0;
+    private price_average: bigint = BigInt(0);
+    private land_average: bigint = BigInt(0);
     private Order: number = 0;
 
     constructor(order: number) {
@@ -199,20 +199,25 @@ export class B_Plus_Tree {
 
         //Array to Hold Result From Filter
         let result: Property[] = [];
-        let price: number = 0;
-        let land: number = 0;
+        let price: bigint = BigInt(0);
+        let land: bigint = BigInt(0);
 
         //Looping Through Array to Find All greater Land Sizes
+        console.log("!!!!!")
         for (const data of key) {
             if(data.land_size >= size){
+                console.log(data)
                 result.push(data);
-                price += data.price;
-                land += data.land_size;
+                if(!isNaN(data.price))
+                    price += BigInt(data.price);
+                if(!isNaN(data.land_size))
+                    land += BigInt(data.land_size);
             }
         }
 
-        this.price_average = price/result.length;
-        this.land_average = land/result.length;
+        this.price_average = price / BigInt(result.length);
+        console.log(this.price_average + " and " + price);
+        this.land_average = land / BigInt(result.length);
 
         return result;
     }
@@ -223,11 +228,11 @@ export class B_Plus_Tree {
         return result;
     }
 
-    get_price_average(): number{
+    get_price_average(): bigint{
         return this.price_average;
     } 
 
-    get_price_land(): number{
+    get_land_average(): bigint{
         return this.land_average;
     } 
 
