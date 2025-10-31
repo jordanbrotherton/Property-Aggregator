@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  basePath: "/Property-Aggregator",
+  output: "export",
+  reactStrictMode: true
 };
 
 export default nextConfig;
