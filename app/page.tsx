@@ -30,6 +30,7 @@ interface AssessorRecord {
 function GetData(filePath: string)
 {
   const [bPlus, setBPlus] = useState<B_Plus_Tree>(new B_Plus_Tree(1000));
+  let startTime = performance.now();
   useEffect(() => {
     let hi: B_Plus_Tree = new B_Plus_Tree(10000);
     async function readCsvFile(filePath: string): Promise<AssessorRecord[]> {
@@ -54,6 +55,8 @@ function GetData(filePath: string)
         }
         setBPlus(hi);
         loaded = true;
+        let endTime = performance.now();
+        bCreatePerf = endTime - startTime;
     });
 
   }, []);
@@ -61,8 +64,11 @@ function GetData(filePath: string)
 }
 
 function FilterData(mP: number, mS: number, bP: B_Plus_Tree){
+  let startTime = performance.now();
   let bArr = bP.filter(mP, mS);
   maxPage = Math.ceil(bArr.length / 100);
+  let endTime = performance.now();
+  bFilterPerf = endTime - startTime;
   return bArr
 }
 
@@ -71,13 +77,19 @@ let loaded = false;
 let minPrice: number = 0;
 let minSize: number = 0;
 
+let bCreatePerf: number = 0;
+let bFilterPerf: number = 0;
+
 let maxPage: number = 1;
 
 export default function Home() {
   const [properties, setProperties ] = useState<Property[]>([]);
   const [currPage, setCurrPage ] = useState(0);
   const [mPage, setMPage ] = useState(1);
+
   const [isLoading, setLoading] = useState(true);
+  const [bCPerf, setBCPerf] = useState(0);
+  const [bFPerf, setBFPerf] = useState(0);
   
   let bPlus = GetData('./NAL11F202501.csv');
   if(loaded && isLoading) 
@@ -86,6 +98,7 @@ export default function Home() {
       setProperties(FilterData(0, 0, bPlus));
       setCurrPage(0); 
       setMPage(maxPage);
+      setBCPerf(bCreatePerf / 1000);
     }
 
   return (
@@ -97,6 +110,8 @@ export default function Home() {
         <div className="flex items-center w-1/4 bg-zinc-100 font-sans dark:bg-zinc-900 p-10">
           <div>
             <h1 className="max-w-m text-4xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">Stats</h1>
+            <p><b>B+ Creation Time: </b>{bCPerf} s</p>
+            <p><b>B+ Filter Time: </b>{bFPerf} ms</p>
             <p><b>Average Size:</b> TEMP SQFT</p>
             <p><b>Average Price:</b> $TEMP</p>
             { /* TODO - Turn the input box to a slider? */ }
@@ -104,7 +119,7 @@ export default function Home() {
             <p className="my-2"><b>Minimum Price: </b></p><input type="number" defaultValue={0} onChange={(event) => minPrice = parseInt(event.target.value)} name="minPriceBox" className="bg-white dark:bg-zinc-700"></input>
             <p className="my-2"><b>Minimum Size: </b></p><input type="number" defaultValue={0} onChange={(event) => minSize = parseInt(event.target.value)} name="minSizeBox" className="bg-white dark:bg-zinc-700"></input>
             <br></br>
-            <button type="button" onClick={() => {setProperties(FilterData(minPrice, minSize, bPlus)); setCurrPage(0); setMPage(maxPage); }}className="rounded-xl my-2 p-4 px-8 bg-gray-200 text-black dark:text-zinc-50 dark:bg-gray-500">Filter</button>
+            <button type="button" onClick={() => {setProperties(FilterData(minPrice, minSize, bPlus)); setCurrPage(0); setMPage(maxPage); setBFPerf(bFilterPerf); }}className="rounded-xl my-2 p-4 px-8 bg-gray-200 text-black dark:text-zinc-50 dark:bg-gray-500">Filter</button>
             <br></br>
             <div className="flex flex-nowrap items-center">
               <button type="button" onClick={() => {if(currPage > 0){ setCurrPage(currPage - 1) }}}className="rounded-xl my-2 p-2 px-8 mr-2 bg-gray-200 text-black dark:text-zinc-50 dark:bg-gray-500">&lt;</button>
