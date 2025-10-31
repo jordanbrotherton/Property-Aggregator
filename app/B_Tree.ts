@@ -25,6 +25,7 @@ class B_Plus_Tree_Node{
 
     keys: Property[] = [];
     children: B_Plus_Tree_Node[] = [];
+    // @ts-ignore
     next: B_Plus_Tree_Node = null;
 
     //Bool value on whether we have a leaf or node
@@ -43,6 +44,7 @@ class B_Plus_Tree_Node{
 
 export class B_Plus_Tree {
 
+    // @ts-ignore
     private root: B_Plus_Tree_Node = null;
     private price_average: bigint = BigInt(0);
     private land_average: bigint = BigInt(0);

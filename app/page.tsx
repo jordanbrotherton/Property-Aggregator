@@ -4,17 +4,17 @@ import { useEffect, useState } from "react";
 import { B_Plus_Tree, Property } from "./B_Tree";
 import { parse } from 'csv-parse';
 
-function PropertyView({property}){
+function PropertyView( {property}: {property: Property} ){
   // Very basic property card.
   return(
     <div className="max-w-sm rounded-xl overflow-hidden shadow-lg bg-gray-200 p-4 m-4 dark:bg-gray-900">
       {property.address != "" && <h1 className="font-bold text-3xl mb-2">{property.address}</h1>}
       {property.address == "" && <h1 className="font-bold text-3xl mb-2">NO ADDRESS</h1>}
 
-      {property.land_size != "" && <p className="text-gray-700 text-xl dark:text-gray-300">Size: {property.land_size} ft^2</p>}
-      {property.price != "" && <p className="text-gray-700 text-xl dark:text-gray-300">Price: ${property.price}</p>}
-      {property.land_value != "" && <p className="text-gray-700 text-xl dark:text-gray-300">Land Value: ${property.land_value}</p>}
-      {property.sale_value != "" && <p className="text-gray-700 text-xl dark:text-gray-300">Sale Value: ${property.sale_value}</p>}
+      {!isNaN(property.land_size) && <p className="text-gray-700 text-xl dark:text-gray-300">Size: {property.land_size} ft^2</p>}
+      {!isNaN(property.price) && <p className="text-gray-700 text-xl dark:text-gray-300">Price: ${property.price}</p>}
+      {!isNaN(property.land_value) && <p className="text-gray-700 text-xl dark:text-gray-300">Land Value: ${property.land_value}</p>}
+      {!isNaN(property.sale_value) && <p className="text-gray-700 text-xl dark:text-gray-300">Sale Value: ${property.sale_value}</p>}
     </div>
   )
 }
