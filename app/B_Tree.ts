@@ -44,8 +44,8 @@ class B_Plus_Tree_Node{
 export class B_Plus_Tree {
 
     private root: B_Plus_Tree_Node = null;
-    private tree_count: number = 0;
-    private total_price: number = 0;
+    private price_average: number = 0;
+    private land_average: number = 0;
     private Order: number = 0;
 
     constructor(order: number) {
@@ -127,8 +127,6 @@ export class B_Plus_Tree {
             }
             this.insertNonFull(this.root, key);
         }
-        this.tree_count ++;
-        this.total_price += key.price;
     }
 
     //These Methods Contribute to printing the tree
@@ -201,13 +199,20 @@ export class B_Plus_Tree {
 
         //Array to Hold Result From Filter
         let result: Property[] = [];
+        let price: number = 0;
+        let land: number = 0;
 
         //Looping Through Array to Find All greater Land Sizes
         for (const data of key) {
             if(data.land_size >= size){
                 result.push(data);
+                price += data.price;
+                land += data.land_size;
             }
         }
+
+        this.price_average = price/result.length;
+        this.land_average = land/result.length;
 
         return result;
     }
@@ -217,6 +222,14 @@ export class B_Plus_Tree {
         result = this.search_by_land_size(result, min_size);
         return result;
     }
+
+    get_price_average(): number{
+        return this.price_average;
+    } 
+
+    get_price_land(): number{
+        return this.land_average;
+    } 
 
 }
 
