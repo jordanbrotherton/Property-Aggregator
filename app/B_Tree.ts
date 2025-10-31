@@ -3,7 +3,7 @@ import { parse } from 'csv-parse';
 
 //TODO: Finish Comments
 
-class Property{
+export class Property{
 
     //Properties of each Node
     address: string;
@@ -41,8 +41,7 @@ class B_Plus_Tree_Node{
 
 }
 
-class B_Plus_Tree {
-
+export class B_Plus_Tree {
 
     private root: B_Plus_Tree_Node = null;
     private tree_count: number = 0;
@@ -231,37 +230,3 @@ interface AssessorRecord {
     AV_NSD: number;
     JV: number;
 }
-
-async function readCsvFile(filePath: string): Promise<AssessorRecord[]> {
-    const records: AssessorRecord[] = [];
-
-    const parser = fs.createReadStream(filePath)
-        .pipe(parse({
-            columns: true,
-            skip_empty_lines: true,
-        }));
-
-    for await (const record of parser) {
-        records.push(record as AssessorRecord);
-    }
-    return records;
-}
-
-readCsvFile('./NAL11F202501.csv')
-    .then(data => {
-        console.log(`Parsed ${data.length} records.`);
-        for(let i: number = 0; i < data.length; i++){
-            let property: Property = new Property(data[i].PHY_ADDR1, data[i].AV_NSD, data[i].LND_VAL, data[i].LND_SQFOOT, data[i].JV);
-            hi.insert(property);
-        }
-    })
-
-    .then(() => {
-        console.log(hi.filter(500000,0));
-    })
-
-    .catch(error => {
-        console.error('Error reading CSV:', error);
-    });
-
-
