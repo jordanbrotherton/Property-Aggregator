@@ -116,7 +116,7 @@ class MaxHeap{
     //Peeks our actual heap
     peek(): Property | undefined { //just return the highest priority
         if (this.stored_heap.length === 0) {
-            return null;
+            return undefined;
         }
         return this.stored_heap[0];
     }
