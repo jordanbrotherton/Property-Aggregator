@@ -124,7 +124,7 @@ class MaxHeap{
     //Peeks the heap that we manipulate
     private peek_heap_internal(): Property | undefined { //just return the highest priority
         if (this.heap.length === 0) {
-            return null;
+            return undefined;
         }
         return this.heap[0];
     }
@@ -144,26 +144,17 @@ class MaxHeap{
         }
     }
 
-    //Filter Operations
+
     private search_by_price(key: number): Property[] {
         let result: Property[] = [];
-
-        // CORRECT LOOP: Iterate only while the working heap has elements.
         while (this.heap.length > 0) {
-            const top = this.peek_heap_internal(); // Property | null | undefined
+            const top = this.peek_heap_internal();
 
-            // Safety Check: Break if empty OR if the maximum element is below the price key
             if (!top || top.price <= key) {
                 break;
             }
-
-            // Extract the max property and add it to the results (it's above the price key)
-            // We use ! because we just checked it with !top
             result.push(this.extractMaximum()!);
         }
-
-        // Sort is still needed because extractMaximum() returns items in descending order,
-        // but the final filter output might need to be ascending.
         result.sort((a, b) => a.price - b.price);
         return result;
     }
