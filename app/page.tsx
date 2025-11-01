@@ -50,7 +50,7 @@ function GetData(filePath: string)
     readCsvFile(filePath).then(data => {
         console.log(`Parsed ${data.length} records.`);
         for(let i: number = 0; i < data.length; i++){
-            let property: Property = new Property(data[i].PHY_ADDR1, data[i].AV_NSD, data[i].LND_VAL, data[i].LND_SQFOOT, data[i].JV);
+            let property: Property = new Property(data[i].PHY_ADDR1, Number(data[i].AV_NSD), Number(data[i].LND_VAL), Number(data[i].LND_SQFOOT), Number(data[i].JV));
             hi.insert(property);
         }
         setBPlus(hi);

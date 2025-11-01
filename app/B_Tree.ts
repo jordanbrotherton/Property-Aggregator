@@ -205,10 +205,8 @@ export class B_Plus_Tree {
         let land: bigint = BigInt(0);
 
         //Looping Through Array to Find All greater Land Sizes
-        console.log("!!!!!")
         for (const data of key) {
             if(data.land_size >= size){
-                console.log(data)
                 result.push(data);
                 if(!isNaN(data.price))
                     price += BigInt(data.price);
@@ -217,9 +215,13 @@ export class B_Plus_Tree {
             }
         }
 
-        this.price_average = price / BigInt(result.length);
-        console.log(this.price_average + " and " + price);
-        this.land_average = land / BigInt(result.length);
+       if(result.length != 0){
+            this.price_average = price / BigInt(result.length);
+            this.land_average = land / BigInt(result.length);
+        }else{
+            this.price_average = BigInt(0);
+            this.land_average = BigInt(0);
+        }
 
         return result;
     }

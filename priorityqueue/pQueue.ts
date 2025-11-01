@@ -1,3 +1,6 @@
+import * as fs from 'fs';
+import { parse } from 'csv-parse';
+
 //default property class
 class Property{
     address: string;
@@ -17,18 +20,15 @@ class Property{
 }
 
 //generic class, holds any type (ex: X)
-class PriorityQueue<X> {
-    //internal array
-    private heap: X[]; 
-  
-    //will determine the ordering
-    // >0 if higher than b, <0 if lower than b, =0 if equal priority
-    private comparator: (a: X, b: X) => number;
+class MaxHeap{
 
-    constructor(comparator: (a: X, b: X) => number) {
-        this.heap=[];
-        this.comparator=comparator;
-    }
+    //Attributes for Averages
+    private price_average: bigint = BigInt(0);
+    private land_average: bigint = BigInt(0);
+
+    //internal arrays; One is the actual array. The other is for filters to modify
+    private stored_heap: Property[] = [];
+    private heap: Property[] = [];
 
     //
     //HEAP NAVIGATION METHODS
@@ -41,41 +41,65 @@ class PriorityQueue<X> {
     private right(index: number): number {
         return 2*index+2;
     }
-    private swap(i: number, j: number): void { //to swap two elements in a heap
+
+    //Different swaps depending on heap in use
+    private swap_heap(i: number, j: number): void { //to swap two elements in a heap
         [this.heap[i], this.heap[j]] = [this.heap[j], this.heap[i]];
     }
+    private swap_stored_heap(i: number, j: number): void { //to swap two elements in a heap
+        [this.stored_heap[i], this.stored_heap[j]] = [this.stored_heap[j], this.stored_heap[i]];
+    }
+
 
     //
     //HEAP MAINTANANCE METHODS
-    private heapify_up(index: number): void { //move up until property restored, call after insert
-        while(index>0 && this.comparator(this.heap[index], this.heap[this.parent(index)]) < 0) {
-            this.swap(index, this.parent(index));
+    //Each heap operates on a different array so that filter can run optimally
+    private heapify_up() {
+        let index = this.stored_heap.length - 1;
+        while (this.parent(index) >= 0 && this.stored_heap[this.parent(index)].price < this.stored_heap[index].price) {
+            this.swap_stored_heap(this.parent(index), index);
             index = this.parent(index);
         }
     }
-    private heapify_down(index: number): void { //move down until restored, call after extraction
-        let smallest = index;
-        const left = this.left(index);
-        const right = this.right(index);
-        if(left < this.heap.length && this.comparator(this.heap[left],this.heap[smallest]) < 0) {
-            smallest = left;
-        }
-        if(right < this.heap.length && this.comparator(this.heap[right],this.heap[smallest]) < 0) {
-            smallest = right; //same two ifs
-        }
-        if(smallest !== index) {
-            this.swap(index, smallest);
-            this.heapify_down(smallest);
+    private heapify_down() {
+        let index = 0;
+        let n = this.heap.length;
+
+        while (this.left(index) < n) {
+            let largest = index;
+            let leftIndex = this.left(index);
+            let rightIndex = this.right(index);
+
+            // 1. Check if left child is larger than current largest (parent)
+            if (leftIndex < n && this.heap[leftIndex].price > this.heap[largest].price) {
+                largest = leftIndex;
+            }
+
+            // 2. Check if right child is larger than current largest (either parent or left child)
+            if (rightIndex < n && this.heap[rightIndex].price > this.heap[largest].price) {
+                largest = rightIndex;
+            }
+
+            // 3. If the largest element is not the current element, swap and continue.
+            if (largest !== index) {
+                this.swap_heap(index, largest);
+                index = largest; // Continue down the tree
+            } else {
+                break; // Max-Heap property is satisfied at this node
+            }
         }
     }
 
     //
     //CORE QUEUE OPS
-    insert(value: X): void { //insert new item into queue
-        this.heap.push(value);
-        this.heapify_up(this.heap.length-1);
-    } //Time Complexity: WIP
-    extractMinimum(): X | undefined { //get rid of highest priority element
+    insert(value: Property): void { //insert new item into queue
+        this.stored_heap.push(value);
+        this.heapify_up();
+    }
+
+    //Time Complexity: WIP
+    //Only works on our array to manipulate
+    extractMaximum(): Property | undefined { //get rid of highest priority element
         if(this.heap.length === 0) {
             return undefined;
         }
@@ -84,28 +108,146 @@ class PriorityQueue<X> {
         }
         const top = this.heap[0];
         this.heap[0] = this.heap.pop()!;
-        this.heapify_down(0);
+        this.heapify_down();
         return top;
-    } //Time Complexity: WIP
-    peek(): X | undefined { //just return the highest priority
+    }
+
+    //Time Complexity: WIP
+    //Peeks our actual heap
+    peek(): Property | undefined { //just return the highest priority
+        if (this.stored_heap.length === 0) {
+            return null;
+        }
+        return this.stored_heap[0];
+    }
+
+    //Peeks the heap that we manipulate
+    private peek_heap_internal(): Property | undefined { //just return the highest priority
+        if (this.heap.length === 0) {
+            return null;
+        }
         return this.heap[0];
-    } //Time Copmlexity: WIP
+    }
+
+    //Time Copmlexity: WIP
     isEmpty(): boolean { //if the queue is empty, true
-        if(this.heap.length ===0) {
+        if(this.stored_heap.length ===0) {
             return true;
         }
         return false;
     }
-    size(): number { //return how many elements are in queue
-        return this.heap.length;
-    }
-    filter(predicate: (item: X) => boolean) : X[] { //return all elements to satisfy predicate
-        return this.heap.filter(predicate);
-    } //NON-modifier
-
 
     //quick debugger method
-    printQueue(): void {
-        console.log(this.heap);
+    printHeap(): void {
+        for(let i = 0; i<this.stored_heap.length;i++) {
+            console.log(this.stored_heap[i]);
+        }
+    }
+
+    //Filter Operations
+    private search_by_price(key: number): Property[] {
+        let result: Property[] = [];
+
+        // CORRECT LOOP: Iterate only while the working heap has elements.
+        while (this.heap.length > 0) {
+            const top = this.peek_heap_internal(); // Property | null | undefined
+
+            // Safety Check: Break if empty OR if the maximum element is below the price key
+            if (!top || top.price <= key) {
+                break;
+            }
+
+            // Extract the max property and add it to the results (it's above the price key)
+            // We use ! because we just checked it with !top
+            result.push(this.extractMaximum()!);
+        }
+
+        // Sort is still needed because extractMaximum() returns items in descending order,
+        // but the final filter output might need to be ascending.
+        result.sort((a, b) => a.price - b.price);
+        return result;
+    }
+
+    private search_by_land_size(key: Property[], size: number): Property[] {
+
+        //Array to Hold Result From Filter
+        let result: Property[] = [];
+        let price: bigint = BigInt(0);
+        let land: bigint = BigInt(0);
+
+        //Looping Through Array to Find All greater Land Sizes
+        for (const data of key) {
+            if(data.land_size >= size){
+                result.push(data);
+                if(!isNaN(data.price))
+                    price += BigInt(data.price);
+                if(!isNaN(data.land_size))
+                    land += BigInt(data.land_size);
+            }
+        }
+        if(result.length != 0){
+            this.price_average = price / BigInt(result.length);
+            this.land_average = land / BigInt(result.length);
+        }else{
+            this.price_average = BigInt(0);
+            this.land_average = BigInt(0);
+        }
+
+        return result;
+    }
+
+    filter(min_price: number, min_size: number): Property[] {
+        this.heap = [...this.stored_heap];
+        let result: Property[] =  this.search_by_price(min_price);
+        result = this.search_by_land_size(result, min_size);
+        return result;
     }
 }
+
+
+
+
+let hi: MaxHeap = new MaxHeap();
+
+interface AssessorRecord {
+    PHY_ADDR1: string;
+    LND_SQFOOT: number;
+    LND_VAL: number;
+    AV_NSD: number;
+    JV: number;
+}
+
+async function readCsvFile(filePath: string): Promise<AssessorRecord[]> {
+    const records: AssessorRecord[] = [];
+
+    const parser = fs.createReadStream(filePath)
+        .pipe(parse({
+            columns: true,
+            skip_empty_lines: true,
+        }));
+
+    for await (const record of parser) {
+        records.push(record as AssessorRecord);
+    }
+    return records;
+}
+
+readCsvFile('./NAL11F202501.csv')
+    .then(data => {
+        console.log(`Parsed ${data.length} records.`);
+        for(let i: number = 0; i < data.length; i++){
+            let property: Property = new Property(data[i].PHY_ADDR1, Number(data[i].AV_NSD), Number(data[i].LND_VAL), Number(data[i].LND_SQFOOT), Number(data[i].JV));
+            hi.insert(property);
+        }
+    })
+
+    .then(() =>{
+        console.log(hi.filter(0,0));
+    })
+
+
+    .catch(error => {
+        console.error('Error reading CSV:', error);
+    });
+
+
