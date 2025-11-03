@@ -1,5 +1,8 @@
 import { Property } from './property';
 
+
+//pulled from old pQueue folder
+//generic class, holds any type (ex: X)
 export class MaxHeap{
 
     // Attributes for Averages
@@ -94,26 +97,17 @@ export class MaxHeap{
     //Time Complexity: WIP
     //Peeks our actual heap
     peek(): Property | undefined { //just return the highest priority
-        if (this.stored_heap.length === 0) {
-            return undefined;
-        }
         return this.stored_heap[0];
     }
 
     //Peeks the heap that we manipulate
     private peek_heap_internal(): Property | undefined { //just return the highest priority
-        if (this.heap.length === 0) {
-            return undefined;
-        }
         return this.heap[0];
     }
 
     //Time Copmlexity: WIP
     isEmpty(): boolean { //if the queue is empty, true
-        if(this.stored_heap.length ===0) {
-            return true;
-        }
-        return false;
+        return this.stored_heap.length ===0;
     }
 
     //quick debugger method
