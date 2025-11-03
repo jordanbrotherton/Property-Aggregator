@@ -168,11 +168,42 @@ export class MaxHeap{
 
         return result;
     }
+    private remove_unassigned(key: Property[], remove: boolean): Property[] {
 
-    filter(min_price: number, min_size: number): Property[] {
+        let result: Property[] = [];
+        let price: bigint = BigInt(0);
+        let land: bigint = BigInt(0);
+
+        if(remove){
+        for (const data of key) {
+            if(data.address != "UNASSIGNED LOCATION RE"){
+                result.push(data);
+                    if(!isNaN(data.price))
+                    price += BigInt(data.price);
+                    if(!isNaN(data.land_size))
+                    land += BigInt(data.land_size);
+            }
+        }
+    }else{
+        return key;
+    }
+
+       if(result.length != 0){
+            this.price_average = price / BigInt(result.length);
+            this.land_average = land / BigInt(result.length);
+        }else{
+            this.price_average = BigInt(0);
+            this.land_average = BigInt(0);
+        }
+
+        return result;
+    }
+
+    filter(min_price: number, min_size: number, remove: boolean): Property[] {
         this.heap = [...this.stored_heap];
         let result: Property[] =  this.search_by_price(min_price);
         result = this.search_by_land_size(result, min_size);
+        result = this.remove_unassigned(result, remove);
         return result;
     }
 

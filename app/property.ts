@@ -7,6 +7,7 @@ export class Property{
     land_size: number = 0;
     sale_value: number = 0;
 
+    //Constructor for Property Class
     constructor(add: string, p: number, l_val: number, l_s: number, s_v: number) {
         this.address = add;
         this.price = p;
