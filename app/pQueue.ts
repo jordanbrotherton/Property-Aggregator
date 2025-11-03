@@ -159,7 +159,7 @@ export class MaxHeap{
         let result: Property[] = [];
         while (this.heap.length > 0) {
             const top = this.peek_heap_internal();
-            if (!top || top.price <= key) {
+            if (!top || top.price < key) {
                 break;
             }
             result.push(this.extractMaximum()!);
