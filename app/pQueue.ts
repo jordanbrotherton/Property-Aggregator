@@ -1,8 +1,5 @@
 import { Property } from './property';
 
-
-//pulled from old pQueue folder
-//generic class, holds any type (ex: X)
 export class MaxHeap{
 
     // Attributes for Averages
@@ -13,29 +10,49 @@ export class MaxHeap{
     private stored_heap: Property[] = [];
     private heap: Property[] = [];
 
+
+
+
+
     // HEAP NAVIGATION METHODS
+
+    //Time Complexity: WIP
     private parent(index: number) : number {
         return Math.floor((index-1)/2);
     }
+
+    //Time Complexity: WIP
     private left(index: number) : number {
         return 2*index+1;
     }
+
+    //Time Complexity: WIP
     private right(index: number): number {
         return 2*index+2;
     }
 
+
+
+
     //Different swaps depending on heap in use
-    private swap_heap(i: number, j: number): void { //to swap two elements in a heap
+
+    //Time Complexity: WIP
+    private swap_heap(i: number, j: number): void { //to swap two elements in our modifiable heap
         [this.heap[i], this.heap[j]] = [this.heap[j], this.heap[i]];
     }
-    private swap_stored_heap(i: number, j: number): void { //to swap two elements in a heap
+
+    //Time Complexity: WIP
+    private swap_stored_heap(i: number, j: number): void { //to swap two elements in our unmodifiable heap
         [this.stored_heap[i], this.stored_heap[j]] = [this.stored_heap[j], this.stored_heap[i]];
     }
 
 
-    //
+
+
     //HEAP MAINTANANCE METHODS
     //Each heap operates on a different array so that filter can run optimally
+    
+    //Time Complexity: WIP
     private heapify_up() {
         let index = this.stored_heap.length - 1;
         while (this.parent(index) >= 0 && this.stored_heap[this.parent(index)].price < this.stored_heap[index].price) {
@@ -43,6 +60,8 @@ export class MaxHeap{
             index = this.parent(index);
         }
     }
+    
+    //Time Complexity: WIP
     private heapify_down() {
         let index = 0;
         let n = this.heap.length;
@@ -72,15 +91,19 @@ export class MaxHeap{
         }
     }
 
-    //
+
+
+
     //CORE QUEUE OPS
+
+    //Time Complexity: WIP
     insert(value: Property): void { //insert new item into queue
         this.stored_heap.push(value);
         this.heapify_up();
     }
 
-    //Time Complexity: WIP
     //Only works on our array to manipulate
+    //Time Complexity: WIP
     extractMaximum(): Property | undefined { //get rid of highest priority element
         if(this.heap.length === 0) {
             return undefined;
@@ -94,23 +117,34 @@ export class MaxHeap{
         return top;
     }
 
-    //Time Complexity: WIP
     //Peeks our actual heap
+    //Time Complexity: WIP
     peek(): Property | undefined { //just return the highest priority
+        if (this.stored_heap.length === 0) {
+            return undefined;
+        }
         return this.stored_heap[0];
     }
 
     //Peeks the heap that we manipulate
+    //Time Complexity: WIP
     private peek_heap_internal(): Property | undefined { //just return the highest priority
+        if (this.heap.length === 0) {
+            return undefined;
+        }
         return this.heap[0];
     }
 
     //Time Copmlexity: WIP
     isEmpty(): boolean { //if the queue is empty, true
-        return this.stored_heap.length ===0;
+        if(this.stored_heap.length ===0) {
+            return true;
+        }
+        return false;
     }
 
     //quick debugger method
+    //Time Complexity: WIP
     printHeap(): void {
         for(let i = 0; i<this.stored_heap.length;i++) {
             console.log(this.stored_heap[i]);
@@ -118,6 +152,12 @@ export class MaxHeap{
     }
 
 
+
+
+
+    // Filter Operations
+
+    //Time Complexity: WIP
     private search_by_price(key: number): Property[] {
         let result: Property[] = [];
         while (this.heap.length > 0) {
@@ -132,6 +172,7 @@ export class MaxHeap{
         return result;
     }
 
+    //Time Complexity: WIP
     private search_by_land_size(key: Property[], size: number): Property[] {
 
         //Array to Hold Result From Filter
@@ -159,6 +200,8 @@ export class MaxHeap{
 
         return result;
     }
+
+    //Time Complexity: WIP
     private remove_unassigned(key: Property[], remove: boolean): Property[] {
 
         let result: Property[] = [];
@@ -190,6 +233,7 @@ export class MaxHeap{
         return result;
     }
 
+    //Time Complexity: WIP
     filter(min_price: number, min_size: number, remove: boolean): Property[] {
         this.heap = [...this.stored_heap];
         let result: Property[] =  this.search_by_price(min_price);
@@ -198,10 +242,17 @@ export class MaxHeap{
         return result;
     }
 
+
+
+
+    // Operations to Get Averages to Display 
+
+    //Time Complexity: WIP
     get_price_average(): bigint{
         return this.price_average;
     } 
 
+    //Time Complexity: WIP
     get_land_average(): bigint{
         return this.land_average;
     } 
