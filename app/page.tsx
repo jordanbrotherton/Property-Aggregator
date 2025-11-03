@@ -17,10 +17,10 @@ function PropertyView({ property }: { property: Property }) {
         {property.address != "" && <h1 className="font-bold text-3xl mb-2">{property.address}</h1>}
         {property.address == "" && <h1 className="font-bold text-3xl mb-2">NO ADDRESS</h1>}
 
-        {!isNaN(property.land_size) && <p className="text-gray-700 text-xl dark:text-gray-300">Size: {property.land_size} ft^2</p>}
-        {!isNaN(property.price) && <p className="text-gray-700 text-xl dark:text-gray-300">Price: ${property.price}</p>}
-        {!isNaN(property.land_value) && <p className="text-gray-700 text-xl dark:text-gray-300">Land Value: ${property.land_value}</p>}
-        {!isNaN(property.sale_value) && <p className="text-gray-700 text-xl dark:text-gray-300">Sale Value: ${property.sale_value}</p>}
+        {!isNaN(property.land_size) && <p className="text-gray-700 text-xl dark:text-gray-300">Size: {property.land_size.toLocaleString()} ft^2</p>}
+        {!isNaN(property.price) && <p className="text-gray-700 text-xl dark:text-gray-300">Price: ${property.price.toLocaleString()}</p>}
+        {!isNaN(property.land_value) && <p className="text-gray-700 text-xl dark:text-gray-300">Land Value: ${property.land_value.toLocaleString()}</p>}
+        {!isNaN(property.sale_value) && <p className="text-gray-700 text-xl dark:text-gray-300">Sale Value: ${property.sale_value.toLocaleString()}</p>}
       </div>
     </a>
   )
@@ -190,18 +190,18 @@ export default function Home() {
             
             <hr className="my-1 border-gray-800 dark:border-gray-200" />
             
-            <p><b>B+ Creation Time: </b>{bCPerf} ms</p>
-            <p><b>B+ Filter Time: </b>{bFPerf} ms</p>
+            <p><b>B+ Creation Time: </b>{bCPerf.toLocaleString()} ms</p>
+            <p><b>B+ Filter Time: </b>{bFPerf.toLocaleString()} ms</p>
             
             <hr className="my-2 border-gray-800 dark:border-gray-200" />
             
-            <p><b>Heap Creation Time: </b>{hCPerf} ms</p>
-            <p><b>Heap Filter Time: </b>{hFPerf} ms</p>
+            <p><b>Heap Creation Time: </b>{hCPerf.toLocaleString()} ms</p>
+            <p><b>Heap Filter Time: </b>{hFPerf.toLocaleString()} ms</p>
             
             <hr className="my-2 border-gray-800 dark:border-gray-200" />
             
-            <p><b>Average Price: </b>${propAvgPrice}</p>
-            <p><b>Average Size: </b>{propAvgSize} ft^2</p>
+            <p><b>Average Price: </b>${propAvgPrice.toLocaleString()}</p>
+            <p><b>Average Size: </b>{propAvgSize.toLocaleString()} ft^2</p>
 
             <hr className="my-4 border-0" />
 
