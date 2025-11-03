@@ -6,9 +6,12 @@ import { MaxHeap } from "./pQueue";
 import { Property } from './property';
 import { parse } from 'csv-parse';
 
-function PropertyView( {property}: {property: Property} ){
-  // Very basic property card.
-  return(
+function PropertyView({ property }: { property: Property }) {
+  /* 
+    A basic property view card.
+    Has an anchor to a Google Maps search.
+  */
+  return (
     <a href={"https://www.google.com/maps/search/?api=1&query=" + property.address.replaceAll(" ", "+")} target="_blank" className="max-w-sm rounded-xl overflow-hidden shadow-lg bg-gray-200 p-4 m-4 dark:bg-gray-900">
       <div>
         {property.address != "" && <h1 className="font-bold text-3xl mb-2">{property.address}</h1>}
@@ -23,16 +26,16 @@ function PropertyView( {property}: {property: Property} ){
   )
 }
 
+// Interface for CSV parsing.
 interface AssessorRecord {
-    PHY_ADDR1: string;
-    LND_SQFOOT: number;
-    LND_VAL: number;
-    AV_NSD: number;
-    JV: number;
+  PHY_ADDR1: string;
+  LND_SQFOOT: number;
+  LND_VAL: number;
+  AV_NSD: number;
+  JV: number;
 }
 
-function GetData(filePath: string)
-{
+function GetData(filePath: string) {
   const [bPlus, setBPlus] = useState<B_Plus_Tree>(new B_Plus_Tree(1000));
   const [heap, setHeap] = useState<MaxHeap>(new MaxHeap());
 
@@ -47,69 +50,75 @@ function GetData(filePath: string)
 
       const data = await (await fetch(filePath)).text();
       const parser = parse(data, {
-              columns: true,
-              skip_empty_lines: true,
-          });
+        columns: true,
+        skip_empty_lines: true,
+      });
 
       for await (const record of parser) {
-          records.push(record as AssessorRecord);
+        records.push(record as AssessorRecord);
       }
+      
       return records;
     }
 
     readCsvFile(filePath).then(data => {
-        console.log(`Parsed ${data.length} records.`);
+      console.log(`Parsed ${data.length} records.`);
 
-        // Ideally these would be in one statement, but to compare performance times, they're separated.
+      /* 
+      Ideally these would be in one statement, 
+      but to compare performance times, they're separated into two loops.
+      */
 
-        // Creating B+ Tree
-        startTime = performance.now();
-        for(let i: number = 0; i < data.length; i++){
-            let property: Property = new Property(data[i].PHY_ADDR1, Number(data[i].AV_NSD), Number(data[i].LND_VAL), Number(data[i].LND_SQFOOT), Number(data[i].JV));
-            bPlusTree.insert(property);
-        }
-        setBPlus(bPlusTree);
-        let endTime = performance.now();
-        bCreatePerf = endTime - startTime;
+      // Creating B+ Tree
+      startTime = performance.now();
+      for (let i: number = 0; i < data.length; i++) {
+        let property: Property = new Property(data[i].PHY_ADDR1, Number(data[i].AV_NSD), Number(data[i].LND_VAL), Number(data[i].LND_SQFOOT), Number(data[i].JV));
+        bPlusTree.insert(property);
+      }
+      setBPlus(bPlusTree);
+      let endTime = performance.now();
+      bCreatePerf = endTime - startTime;
 
-        // Creating Max Heap
-        startTime = performance.now();
-        for(let i: number = 0; i < data.length; i++){
-            let property: Property = new Property(data[i].PHY_ADDR1, Number(data[i].AV_NSD), Number(data[i].LND_VAL), Number(data[i].LND_SQFOOT), Number(data[i].JV));
-            maxHeap.insert(property);
-        }
-        setHeap(maxHeap);
-        endTime = performance.now();
-        hCreatePerf = endTime - startTime;
+      // Creating Max Heap
+      startTime = performance.now();
+      for (let i: number = 0; i < data.length; i++) {
+        let property: Property = new Property(data[i].PHY_ADDR1, Number(data[i].AV_NSD), Number(data[i].LND_VAL), Number(data[i].LND_SQFOOT), Number(data[i].JV));
+        maxHeap.insert(property);
+      }
+      setHeap(maxHeap);
+      endTime = performance.now();
+      hCreatePerf = endTime - startTime;
 
-        loaded = true;
+      loaded = true;
     });
 
   }, []);
   return [bPlus, heap];
 }
 
-function FilterData(minimumPrice: number, minimumSize: number, structsArray: Array<B_Plus_Tree | MaxHeap>, usingBPlus: boolean){
+function FilterData(minimumPrice: number, minimumSize: number, structsArray: Array<B_Plus_Tree | MaxHeap>, usingBPlus: boolean) {
   let startTime = performance.now();
 
   let tree = structsArray[0];
-  if(!usingBPlus) { tree = structsArray[1] }
-  
-  let bArr = tree.filter(minimumPrice, minimumSize);
+  if (!usingBPlus) { tree = structsArray[1] }
 
-  maxPage = Math.ceil(bArr.length / 90);
+  let filteredArray = tree.filter(minimumPrice, minimumSize);
+
+  maxPage = Math.ceil(filteredArray.length / 90);
   avgPrice = tree.get_price_average();
   avgSize = tree.get_land_average();
 
   let endTime = performance.now();
 
-  if(usingBPlus){
+  console.log(`Filter finished: Obtained ${filteredArray.length} records in a total of ${maxPage} pages.`);
+
+  if (usingBPlus) {
     bFilterPerf = endTime - startTime;
-  }else{
+  } else {
     hFilterPerf = endTime - startTime;
   }
 
-  return bArr
+  return filteredArray
 }
 
 let loaded = false;
@@ -129,9 +138,19 @@ let hFilterPerf: number = 0;
 let maxPage: number = 1;
 
 export default function Home() {
-  const [properties, setProperties ] = useState<Property[]>([]);
-  const [currPage, setCurrPage ] = useState(0);
-  const [mPage, setMPage ] = useState(1);
+  function UpdateFilter(){
+    setProperties(FilterData(minPrice, minSize, structs, usingBPlus)); 
+    setCurrPage(0); 
+    setMPage(maxPage); 
+    setBFPerf(bFilterPerf); 
+    setHFPerf(hFilterPerf); 
+    setPropAvgPrice(avgPrice); 
+    setPropAvgSize(avgSize); 
+  }
+
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [currPage, setCurrPage] = useState(0);
+  const [mPage, setMPage] = useState(1);
   const [usingBPlus, setUsingBPlus] = useState(true);
 
   const [isLoading, setLoading] = useState(true);
@@ -144,62 +163,79 @@ export default function Home() {
 
   const [propAvgPrice, setPropAvgPrice] = useState(BigInt(0));
   const [propAvgSize, setPropAvgSize] = useState(BigInt(0));
-  
+
   let structs = GetData('./NAL11F202501.csv');
 
-  if(loaded && isLoading) 
-    { 
-      setLoading(false); 
-      setProperties(FilterData(0, 0, structs, usingBPlus));
-      setCurrPage(0); 
-      setMPage(maxPage);
-      setBCPerf(bCreatePerf);
-      setHCPerf(hCreatePerf);
-      setPropAvgPrice((structs[0] as B_Plus_Tree).get_price_average());
-      setPropAvgSize((structs[0] as B_Plus_Tree).get_land_average());
-    }
+  // Initializes variables with a default filter of 0,0.
+  if (loaded && isLoading) {
+    setLoading(false);
+    setBCPerf(bCreatePerf);
+    setHCPerf(hCreatePerf);
+
+    UpdateFilter();
+  }
 
   return (
     <div>
       <header className="flex items-center justify-center">
         <h1 className="center max-w-m p-8 text-6xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">Property Aggregator</h1>
       </header>
+
       <div className="flex">
+        {/* Sidebar */}
         <div className="flex items-center justify-center w-1/5 bg-zinc-100 font-sans dark:bg-zinc-900 p-10">
           <div>
+            {/* Stats View */ }
             <h1 className="max-w-m text-4xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">Stats</h1>
-            <hr className="my-1 border-gray-200" />
+            
+            <hr className="my-1 border-gray-800 dark:border-gray-200" />
+            
             <p><b>B+ Creation Time: </b>{bCPerf} ms</p>
             <p><b>B+ Filter Time: </b>{bFPerf} ms</p>
-            <hr className="my-2 border-gray-100" />
+            
+            <hr className="my-2 border-gray-800 dark:border-gray-200" />
+            
             <p><b>Heap Creation Time: </b>{hCPerf} ms</p>
             <p><b>Heap Filter Time: </b>{hFPerf} ms</p>
-            <hr className="my-2 border-gray-100" />
+            
+            <hr className="my-2 border-gray-800 dark:border-gray-200" />
+            
             <p><b>Average Price: </b>${propAvgPrice}</p>
             <p><b>Average Size: </b>{propAvgSize} ft^2</p>
 
-            <hr className="my-4 border-gray-100 border-0" />
+            <hr className="my-4 border-0" />
 
+            {/* Filters View */ }
             <h1 className="max-w-m text-4xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">Filters</h1>
-            <hr className="my-1 border-gray-200" />
-            <button type="button" onClick={() => {setUsingBPlus(!usingBPlus)}}className="rounded-xl my-2 p-4 px-8 bg-gray-200 text-black dark:text-zinc-50 dark:bg-gray-500">{usingBPlus && "Switch to Heap"}{!usingBPlus && "Switch to B+"}</button>
-            <hr className="my-2 border-gray-100" />
+            
+            <hr className="my-1 border-gray-800 dark:border-gray-200" />
+            
+            <button type="button" onClick={() => { setUsingBPlus(!usingBPlus) }} className="rounded-xl my-2 p-4 px-8 bg-gray-200 text-black dark:text-zinc-50 dark:bg-gray-500">{usingBPlus && "Switch to Heap"}{!usingBPlus && "Switch to B+"}</button>
+            
+            <hr className="my-2 border-gray-800 dark:border-gray-200" />
+            
             <p className="my-2"><b>Minimum Price: </b></p><input type="number" defaultValue={0} onChange={(event) => minPrice = parseInt(event.target.value)} name="minPriceBox" className="bg-white dark:bg-zinc-700"></input>
             <p className="my-2"><b>Minimum Size: </b></p><input type="number" defaultValue={0} onChange={(event) => minSize = parseInt(event.target.value)} name="minSizeBox" className="bg-white dark:bg-zinc-700"></input>
-            <hr className="my-2 border-gray-100" />
-            <button type="button" onClick={() => {setProperties(FilterData(minPrice, minSize, structs, usingBPlus)); setCurrPage(0); setMPage(maxPage); setBFPerf(bFilterPerf); setHFPerf(hFilterPerf); setPropAvgPrice(avgPrice); setPropAvgSize(avgSize); }}className="rounded-xl my-2 p-4 px-8 bg-gray-200 text-black dark:text-zinc-50 dark:bg-gray-500">Filter</button>
-            <hr className="my-2 border-gray-100" />
+            
+            <hr className="my-2 border-gray-800 dark:border-gray-200" />
+            
+            <button type="button" onClick={() => { UpdateFilter() }} className="rounded-xl my-2 p-4 px-8 bg-gray-200 text-black dark:text-zinc-50 dark:bg-gray-500">Filter</button>
+            
+            <hr className="my-2 border-gray-800 dark:border-gray-200" />
+
             <div className="flex flex-nowrap items-center">
-              <button type="button" onClick={() => {if(currPage > 0){ setCurrPage(currPage - 1) }}}className="rounded-xl my-2 p-2 px-8 mr-2 bg-gray-200 text-black dark:text-zinc-50 dark:bg-gray-500">&lt;</button>
+              <button type="button" onClick={() => { if (currPage > 0) { setCurrPage(currPage - 1) } }} className="rounded-xl my-2 p-2 px-8 mr-2 bg-gray-200 text-black dark:text-zinc-50 dark:bg-gray-500">&lt;</button>
               <p>{currPage + 1}/{mPage}</p>
-              <button type="button" onClick={() => {if(currPage < (mPage - 1)){ setCurrPage(currPage + 1) }}}className="rounded-xl my-2 p-2 px-8 ml-2 bg-gray-200 text-black dark:text-zinc-50 dark:bg-gray-500">&gt;</button>
+              <button type="button" onClick={() => { if (currPage < (mPage - 1)) { setCurrPage(currPage + 1) } }} className="rounded-xl my-2 p-2 px-8 ml-2 bg-gray-200 text-black dark:text-zinc-50 dark:bg-gray-500">&gt;</button>
             </div>
           </div>
         </div>
+
+        {/* Properties View */}
         <div className="flex w-4/5 min-h-[calc(100vh-104px)] overflow-y-auto items-center justify-center bg-zinc-50 font-sans dark:bg-black">
+          {isLoading && <h1 className="font-bold text-5xl mx-auto">Loading...</h1>}
           <main className="grid grid-cols-3 max-h-[calc(100vh-104px)]">
-            {isLoading && <h1>Loading...</h1>}
-            {properties.filter((item, index) => {return (index < ((currPage + 1) * 90) && index >= (currPage * 90)) }).map((p, i) => (<PropertyView key={i} property={p}/>))}
+            {properties.filter((item, index) => { return (index < ((currPage + 1) * 90) && index >= (currPage * 90)) }).map((p, i) => (<PropertyView key={i} property={p} />))}
           </main>
         </div>
       </div>
