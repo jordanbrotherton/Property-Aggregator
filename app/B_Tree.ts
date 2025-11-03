@@ -1,22 +1,15 @@
-import * as fs from 'fs';
-import { parse } from 'csv-parse';
 import { Property } from './property';
 
-//TODO: Finish Comments
-
 class B_Plus_Tree_Node{
-
     keys: Property[] = [];
     children: B_Plus_Tree_Node[] = [];
-    // @ts-ignore
-    next: B_Plus_Tree_Node = null;
+    next: B_Plus_Tree_Node | null = null;
 
     //Bool value on whether we have a leaf or node
     leaf: boolean = false;
 
     constructor(isLeaf: boolean);
     constructor();
-
     constructor(isLeaf?: boolean) {
         if(isLeaf !== undefined){
             this.leaf = isLeaf;
@@ -27,8 +20,8 @@ class B_Plus_Tree_Node{
 
 export class B_Plus_Tree {
 
-    // @ts-ignore
-    private root: B_Plus_Tree_Node = null;
+    //Properties of the B+ Tree Along with Data on Averages 
+    private root: B_Plus_Tree_Node | null = null;
     private price_average: bigint = BigInt(0);
     private land_average: bigint = BigInt(0);
     private Order: number = 0;
@@ -38,6 +31,7 @@ export class B_Plus_Tree {
     }
 
     //All of these methods contribute to Inserting in the B+ Tree
+    //The Private Methods are opearations a B+ Tree Performs during Insertion
     private upper_bound(arr: Property[], value: Property): number {
         let low = 0;
         let high = arr.length;
@@ -115,6 +109,7 @@ export class B_Plus_Tree {
     }
 
     //These Methods Contribute to printing the tree
+    //Private Method Performs Operation Recursively and printTree() calls it
     private printTreeHelper(node: B_Plus_Tree_Node, level: number): void {
         if (node != null) {
 
@@ -132,6 +127,9 @@ export class B_Plus_Tree {
         }
     }
     printTree(): void {
+        if (this.root == null){
+            return;
+        }
         this.printTreeHelper(this.root, 0);
     }
 
@@ -182,12 +180,10 @@ export class B_Plus_Tree {
     }
     private search_by_land_size(key: Property[], size: number): Property[] {
 
-        //Array to Hold Result From Filter
         let result: Property[] = [];
         let price: bigint = BigInt(0);
         let land: bigint = BigInt(0);
 
-        //Looping Through Array to Find All greater Land Sizes
         for (const data of key) {
             if(data.land_size >= size){
                 result.push(data);
@@ -208,17 +204,48 @@ export class B_Plus_Tree {
 
         return result;
     }
-    filter(min_price: number, min_size: number): Property[] {
+    private remove_unassigned(key: Property[], remove: boolean): Property[] {
+
+        let result: Property[] = [];
+        let price: bigint = BigInt(0);
+        let land: bigint = BigInt(0);
+
+        if(remove){
+        for (const data of key) {
+            if(data.address != "UNASSIGNED LOCATION RE"){
+                result.push(data);
+                    if(!isNaN(data.price))
+                    price += BigInt(data.price);
+                    if(!isNaN(data.land_size))
+                    land += BigInt(data.land_size);
+            }
+        }
+    }else{
+        return key;
+    }
+
+       if(result.length != 0){
+            this.price_average = price / BigInt(result.length);
+            this.land_average = land / BigInt(result.length);
+        }else{
+            this.price_average = BigInt(0);
+            this.land_average = BigInt(0);
+        }
+
+        return result;
+    }
+    filter(min_price: number, min_size: number, remove: boolean): Property[] {
 
         let result: Property[] =  this.search_by_price(min_price);
         result = this.search_by_land_size(result, min_size);
+        result = this.remove_unassigned(result, remove);
         return result;
     }
 
+    // Functions to Get Averages
     get_price_average(): bigint{
         return this.price_average;
     } 
-
     get_land_average(): bigint{
         return this.land_average;
     } 

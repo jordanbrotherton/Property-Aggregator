@@ -1,4 +1,3 @@
-import { parse } from 'csv-parse';
 import { Property } from './property';
 
 //generic class, holds any type (ex: X)
