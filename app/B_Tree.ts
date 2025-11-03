@@ -1,25 +1,8 @@
 import * as fs from 'fs';
 import { parse } from 'csv-parse';
+import { Property } from './property';
 
 //TODO: Finish Comments
-
-export class Property{
-
-    //Properties of each Node
-    address: string;
-    price: number = 0;
-    land_value: number = 0;
-    land_size: number = 0;
-    sale_value: number = 0;
-
-    constructor(add: string, p: number, l_val: number, l_s: number, s_v: number) {
-        this.address = add;
-        this.price = p;
-        this.land_value = l_val;
-        this.land_size = l_s;
-        this.sale_value = s_v;
-    }
-}
 
 class B_Plus_Tree_Node{
 
@@ -240,15 +223,4 @@ export class B_Plus_Tree {
         return this.land_average;
     } 
 
-}
-
-
-let hi: B_Plus_Tree = new B_Plus_Tree(10000);
-
-interface AssessorRecord {
-    PHY_ADDR1: string;
-    LND_SQFOOT: number;
-    LND_VAL: number;
-    AV_NSD: number;
-    JV: number;
 }

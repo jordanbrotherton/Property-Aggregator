@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import { B_Plus_Tree, Property } from "./B_Tree";
+import { B_Plus_Tree } from "./B_Tree";
+import { MaxHeap } from "./pQueue";
+import { Property } from './property';
 import { parse } from 'csv-parse';
 
 function PropertyView( {property}: {property: Property} ){
@@ -30,9 +32,14 @@ interface AssessorRecord {
 function GetData(filePath: string)
 {
   const [bPlus, setBPlus] = useState<B_Plus_Tree>(new B_Plus_Tree(1000));
+  const [heap, setHeap] = useState<MaxHeap>(new MaxHeap());
+
   let startTime = performance.now();
+
   useEffect(() => {
-    let hi: B_Plus_Tree = new B_Plus_Tree(10000);
+    let bPlusTree: B_Plus_Tree = new B_Plus_Tree(10000);
+    let maxHeap: MaxHeap = new MaxHeap();
+
     async function readCsvFile(filePath: string): Promise<AssessorRecord[]> {
       const records: AssessorRecord[] = [];
 
@@ -47,28 +54,59 @@ function GetData(filePath: string)
       }
       return records;
     }
+
     readCsvFile(filePath).then(data => {
         console.log(`Parsed ${data.length} records.`);
+
+        // Ideally these would be in one statement, but to compare performance times, they're separated.
+
+        // Creating B+ Tree
+        startTime = performance.now();
         for(let i: number = 0; i < data.length; i++){
             let property: Property = new Property(data[i].PHY_ADDR1, Number(data[i].AV_NSD), Number(data[i].LND_VAL), Number(data[i].LND_SQFOOT), Number(data[i].JV));
-            hi.insert(property);
+            bPlusTree.insert(property);
         }
-        setBPlus(hi);
-        loaded = true;
+        setBPlus(bPlusTree);
         let endTime = performance.now();
         bCreatePerf = endTime - startTime;
+
+        // Creating Max Heap
+        startTime = performance.now();
+        for(let i: number = 0; i < data.length; i++){
+            let property: Property = new Property(data[i].PHY_ADDR1, Number(data[i].AV_NSD), Number(data[i].LND_VAL), Number(data[i].LND_SQFOOT), Number(data[i].JV));
+            maxHeap.insert(property);
+        }
+        setHeap(maxHeap);
+        endTime = performance.now();
+        hCreatePerf = endTime - startTime;
+
+        loaded = true;
     });
 
   }, []);
-  return bPlus;
+  return [bPlus, heap];
 }
 
-function FilterData(mP: number, mS: number, bP: B_Plus_Tree){
+function FilterData(minimumPrice: number, minimumSize: number, structsArray: Array<B_Plus_Tree | MaxHeap>, usingBPlus: boolean){
   let startTime = performance.now();
-  let bArr = bP.filter(mP, mS);
+
+  let tree = structsArray[0];
+  if(!usingBPlus) { tree = structsArray[1] }
+  
+  let bArr = tree.filter(minimumPrice, minimumSize);
+
   maxPage = Math.ceil(bArr.length / 100);
+  avgPrice = tree.get_price_average();
+  avgSize = tree.get_land_average();
+
   let endTime = performance.now();
-  bFilterPerf = endTime - startTime;
+
+  if(usingBPlus){
+    bFilterPerf = endTime - startTime;
+  }else{
+    hFilterPerf = endTime - startTime;
+  }
+
   return bArr
 }
 
@@ -77,8 +115,14 @@ let loaded = false;
 let minPrice: number = 0;
 let minSize: number = 0;
 
+let avgPrice: bigint = BigInt(0);
+let avgSize: bigint = BigInt(0);
+
 let bCreatePerf: number = 0;
 let bFilterPerf: number = 0;
+
+let hCreatePerf: number = 0;
+let hFilterPerf: number = 0;
 
 let maxPage: number = 1;
 
@@ -86,23 +130,31 @@ export default function Home() {
   const [properties, setProperties ] = useState<Property[]>([]);
   const [currPage, setCurrPage ] = useState(0);
   const [mPage, setMPage ] = useState(1);
+  const [usingBPlus, setUsingBPlus] = useState(true);
 
   const [isLoading, setLoading] = useState(true);
+
   const [bCPerf, setBCPerf] = useState(0);
   const [bFPerf, setBFPerf] = useState(0);
+
+  const [hCPerf, setHCPerf] = useState(0);
+  const [hFPerf, setHFPerf] = useState(0);
+
   const [propAvgPrice, setPropAvgPrice] = useState(BigInt(0));
   const [propAvgSize, setPropAvgSize] = useState(BigInt(0));
   
-  let bPlus = GetData('./NAL11F202501.csv');
+  let structs = GetData('./NAL11F202501.csv');
+
   if(loaded && isLoading) 
     { 
       setLoading(false); 
-      setProperties(FilterData(0, 0, bPlus));
+      setProperties(FilterData(0, 0, structs, usingBPlus));
       setCurrPage(0); 
       setMPage(maxPage);
-      setBCPerf(bCreatePerf / 1000);
-      setPropAvgPrice(bPlus.get_price_average());
-      setPropAvgSize(bPlus.get_land_average());
+      setBCPerf(bCreatePerf);
+      setHCPerf(hCreatePerf);
+      setPropAvgPrice((structs[0] as B_Plus_Tree).get_price_average());
+      setPropAvgSize((structs[0] as B_Plus_Tree).get_land_average());
     }
 
   return (
@@ -114,16 +166,21 @@ export default function Home() {
         <div className="flex items-center w-1/4 bg-zinc-100 font-sans dark:bg-zinc-900 p-10">
           <div>
             <h1 className="max-w-m text-4xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">Stats</h1>
-            <p><b>B+ Creation Time: </b>{bCPerf} s</p>
+            <p><b>B+ Creation Time: </b>{bCPerf} ms</p>
             <p><b>B+ Filter Time: </b>{bFPerf} ms</p>
+
+            <p><b>Heap Creation Time: </b>{hCPerf} ms</p>
+            <p><b>Heap Filter Time: </b>{hFPerf} ms</p>
+
             <p><b>Average Price: </b>${propAvgPrice}</p>
             <p><b>Average Size: </b>{propAvgSize} ft^2</p>
-            { /* TODO - Turn the input box to a slider? */ }
+            
             <h1 className="max-w-m text-4xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">Filters</h1>
+            <button type="button" onClick={() => {setUsingBPlus(!usingBPlus)}}className="rounded-xl my-2 p-4 px-8 bg-gray-200 text-black dark:text-zinc-50 dark:bg-gray-500">{usingBPlus && "Switch to Heap"}{!usingBPlus && "Switch to B+"}</button>
             <p className="my-2"><b>Minimum Price: </b></p><input type="number" defaultValue={0} onChange={(event) => minPrice = parseInt(event.target.value)} name="minPriceBox" className="bg-white dark:bg-zinc-700"></input>
             <p className="my-2"><b>Minimum Size: </b></p><input type="number" defaultValue={0} onChange={(event) => minSize = parseInt(event.target.value)} name="minSizeBox" className="bg-white dark:bg-zinc-700"></input>
             <br></br>
-            <button type="button" onClick={() => {setProperties(FilterData(minPrice, minSize, bPlus)); setCurrPage(0); setMPage(maxPage); setBFPerf(bFilterPerf); setPropAvgPrice(bPlus.get_price_average()); setPropAvgSize(bPlus.get_land_average()); }}className="rounded-xl my-2 p-4 px-8 bg-gray-200 text-black dark:text-zinc-50 dark:bg-gray-500">Filter</button>
+            <button type="button" onClick={() => {setProperties(FilterData(minPrice, minSize, structs, usingBPlus)); setCurrPage(0); setMPage(maxPage); setBFPerf(bFilterPerf); setHFPerf(hFilterPerf); setPropAvgPrice(avgPrice); setPropAvgSize(avgSize); }}className="rounded-xl my-2 p-4 px-8 bg-gray-200 text-black dark:text-zinc-50 dark:bg-gray-500">Filter</button>
             <br></br>
             <div className="flex flex-nowrap items-center">
               <button type="button" onClick={() => {if(currPage > 0){ setCurrPage(currPage - 1) }}}className="rounded-xl my-2 p-2 px-8 mr-2 bg-gray-200 text-black dark:text-zinc-50 dark:bg-gray-500">&lt;</button>
@@ -134,7 +191,6 @@ export default function Home() {
         </div>
         <div className="flex w-3/4 min-h-[calc(100vh-104px)] overflow-y-auto items-center justify-center bg-zinc-50 font-sans dark:bg-black">
           <main className="grid grid-cols-3 max-h-[calc(100vh-104px)]">
-            {/* TODO - Placeholders until we can map our created data types. */}
             {isLoading && <h1>Loading...</h1>}
             {properties.filter((item, index) => {return (index <= ((currPage + 1) * 100) && index >= (currPage * 100)) }).map((p, i) => (<PropertyView key={i} property={p}/>))}
           </main>

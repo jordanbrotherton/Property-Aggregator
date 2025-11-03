@@ -1,26 +1,8 @@
-import * as fs from 'fs';
 import { parse } from 'csv-parse';
-
-//default property class
-class Property{
-    address: string;
-    price: number;
-    land_value: number;
-    land_size: number;
-    sale_value: number;
-
-
-    constructor(add: string, p: number, l_val: number, l_s: number, s_v: number) {
-        this.address = add;
-        this.price = p;
-        this.land_value = l_val;
-        this.land_size = l_s;
-        this.sale_value = s_v;
-    }
-}
+import { Property } from './property';
 
 //generic class, holds any type (ex: X)
-class MaxHeap{
+export class MaxHeap{
 
     //Attributes for Averages
     private price_average: bigint = BigInt(0);
@@ -193,52 +175,12 @@ class MaxHeap{
         result = this.search_by_land_size(result, min_size);
         return result;
     }
+
+    get_price_average(): bigint{
+        return this.price_average;
+    } 
+
+    get_land_average(): bigint{
+        return this.land_average;
+    } 
 }
-
-
-
-
-let hi: MaxHeap = new MaxHeap();
-
-interface AssessorRecord {
-    PHY_ADDR1: string;
-    LND_SQFOOT: number;
-    LND_VAL: number;
-    AV_NSD: number;
-    JV: number;
-}
-
-async function readCsvFile(filePath: string): Promise<AssessorRecord[]> {
-    const records: AssessorRecord[] = [];
-
-    const parser = fs.createReadStream(filePath)
-        .pipe(parse({
-            columns: true,
-            skip_empty_lines: true,
-        }));
-
-    for await (const record of parser) {
-        records.push(record as AssessorRecord);
-    }
-    return records;
-}
-
-readCsvFile('./NAL11F202501.csv')
-    .then(data => {
-        console.log(`Parsed ${data.length} records.`);
-        for(let i: number = 0; i < data.length; i++){
-            let property: Property = new Property(data[i].PHY_ADDR1, Number(data[i].AV_NSD), Number(data[i].LND_VAL), Number(data[i].LND_SQFOOT), Number(data[i].JV));
-            hi.insert(property);
-        }
-    })
-
-    .then(() =>{
-        console.log(hi.filter(0,0));
-    })
-
-
-    .catch(error => {
-        console.error('Error reading CSV:', error);
-    });
-
-
