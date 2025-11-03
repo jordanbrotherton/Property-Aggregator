@@ -14,8 +14,8 @@ function PropertyView({ property }: { property: Property }) {
   return (
     <a href={"https://www.google.com/maps/search/?api=1&query=" + property.address.replaceAll(" ", "+")} target="_blank" className="max-w-sm rounded-xl overflow-hidden shadow-lg bg-gray-200 p-4 m-4 dark:bg-gray-900">
       <div>
-        {property.address != "" && <h1 className="font-bold text-3xl mb-2">{property.address}</h1>}
-        {property.address == "" && <h1 className="font-bold text-3xl mb-2">NO ADDRESS</h1>}
+        {(property.address != "" && property.address != "UNASSIGNED") && <h1 className="font-bold text-3xl mb-2">{property.address}</h1>}
+        {(property.address == "" || property.address == "UNASSIGNED") && <h1 className="font-bold text-3xl mb-2">UNASSIGNED LOCATION RE</h1>}
 
         {!isNaN(property.land_size) && <p className="text-gray-700 text-xl dark:text-gray-300">Size: {property.land_size.toLocaleString()} ft^2</p>}
         {!isNaN(property.price) && <p className="text-gray-700 text-xl dark:text-gray-300">Price: ${property.price.toLocaleString()}</p>}
@@ -96,13 +96,13 @@ function GetData(filePath: string) {
   return [bPlus, heap];
 }
 
-function FilterData(minimumPrice: number, minimumSize: number, structsArray: Array<B_Plus_Tree | MaxHeap>, usingBPlus: boolean) {
+function FilterData(minimumPrice: number, minimumSize: number, noUnassigned: boolean, structsArray: Array<B_Plus_Tree | MaxHeap>, usingBPlus: boolean) {
   let startTime = performance.now();
 
   let tree = structsArray[0];
   if (!usingBPlus) { tree = structsArray[1] }
 
-  let filteredArray = tree.filter(minimumPrice, minimumSize);
+  let filteredArray = tree.filter(minimumPrice, minimumSize, noUnassigned);
 
   maxPage = Math.ceil(filteredArray.length / 90);
   avgPrice = tree.get_price_average();
@@ -125,6 +125,7 @@ let loaded = false;
 
 let minPrice: number = 0;
 let minSize: number = 0;
+let removeUnassigned: boolean = false;
 
 let avgPrice: bigint = BigInt(0);
 let avgSize: bigint = BigInt(0);
@@ -139,7 +140,7 @@ let maxPage: number = 1;
 
 export default function Home() {
   function UpdateFilter(){
-    setProperties(FilterData(minPrice, minSize, structs, usingBPlus)); 
+    setProperties(FilterData(minPrice, minSize, removeUnassigned, structs, usingBPlus)); 
     setCurrPage(0); 
     setMPage(maxPage); 
     setBFPerf(bFilterPerf); 
@@ -216,7 +217,8 @@ export default function Home() {
             
             <p className="my-2"><b>Minimum Price: </b></p><input type="number" defaultValue={0} onChange={(event) => minPrice = parseInt(event.target.value)} name="minPriceBox" className="bg-white dark:bg-zinc-700"></input>
             <p className="my-2"><b>Minimum Size: </b></p><input type="number" defaultValue={0} onChange={(event) => minSize = parseInt(event.target.value)} name="minSizeBox" className="bg-white dark:bg-zinc-700"></input>
-            
+            <p className="my-2"><b>Remove Unassigned Properties:</b></p><input type="checkbox" onChange={() => {removeUnassigned = !removeUnassigned}} />
+
             <hr className="my-2 border-gray-800 dark:border-gray-200" />
             
             <button type="button" onClick={() => { UpdateFilter() }} className="rounded-xl my-2 p-4 px-8 bg-gray-200 text-black dark:text-zinc-50 dark:bg-gray-500">Filter</button>
