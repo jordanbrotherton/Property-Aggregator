@@ -15,17 +15,17 @@ export class MaxHeap{
 
     // HEAP NAVIGATION METHODS
 
-    //Time Complexity: WIP
+    //Time Complexity: O(1)
     private parent(index: number) : number {
         return Math.floor((index-1)/2);
     }
 
-    //Time Complexity: WIP
+    //Time Complexity: O(1)
     private left(index: number) : number {
         return 2*index+1;
     }
 
-    //Time Complexity: WIP
+    //Time Complexity: O(1)
     private right(index: number): number {
         return 2*index+2;
     }
@@ -35,12 +35,12 @@ export class MaxHeap{
 
     //Different swaps depending on heap in use
 
-    //Time Complexity: WIP
+    //Time Complexity: O(1)
     private swap_heap(i: number, j: number): void { //to swap two elements in our modifiable heap
         [this.heap[i], this.heap[j]] = [this.heap[j], this.heap[i]];
     }
 
-    //Time Complexity: WIP
+    //Time Complexity: O(1)
     private swap_stored_heap(i: number, j: number): void { //to swap two elements in our unmodifiable heap
         [this.stored_heap[i], this.stored_heap[j]] = [this.stored_heap[j], this.stored_heap[i]];
     }
@@ -127,7 +127,7 @@ export class MaxHeap{
     }
 
     //Peeks the heap that we manipulate
-    //Time Complexity: WIP
+    //Time Complexity: O(1)
     private peek_heap_internal(): Property | undefined { //just return the highest priority
         if (this.heap.length === 0) {
             return undefined;
@@ -135,7 +135,7 @@ export class MaxHeap{
         return this.heap[0];
     }
 
-    //Time Copmlexity: WIP
+    //Time Copmlexity: O(1)
     isEmpty(): boolean { //if the queue is empty, true
         if(this.stored_heap.length ===0) {
             return true;
@@ -144,7 +144,7 @@ export class MaxHeap{
     }
 
     //quick debugger method
-    //Time Complexity: WIP
+    //Time Complexity: O(n)
     printHeap(): void {
         for(let i = 0; i<this.stored_heap.length;i++) {
             console.log(this.stored_heap[i]);
@@ -195,7 +195,7 @@ export class MaxHeap{
         return result;
     }
 
-    //Time Complexity: WIP
+    //Time Complexity: O(n)
     private remove_unassigned(key: Property[], remove: boolean): Property[] {
 
         let result: Property[] = [];

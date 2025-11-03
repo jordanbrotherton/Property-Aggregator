@@ -32,11 +32,11 @@ export class B_Plus_Tree {
 
 
 
-    
+
     // All of these methods contribute to Inserting in the B+ Tree
     // The Private Methods are opearations a B+ Tree Performs during Insertion
 
-    //Time Complexity: WIP
+    //Time Complexity: O(log n)
     private upper_bound(arr: Property[], value: Property): number {
         let low = 0;
         let high = arr.length;
@@ -61,7 +61,7 @@ export class B_Plus_Tree {
         return result; // Returns the index of the first element strictly greater than 'value'
     }
 
-    //Time Complexity: WIP
+    //Time Complexity: O(k); k is the order
     private splitChild(parent: B_Plus_Tree_Node, index: number, child: B_Plus_Tree_Node): void {
         let newChild: B_Plus_Tree_Node = new B_Plus_Tree_Node(child.leaf);
 
@@ -82,7 +82,7 @@ export class B_Plus_Tree {
         }
     }
 
-    //Time Complexity: WIP
+    //Time Complexity: O(log n)
     private insertNonFull(node: B_Plus_Tree_Node, key: Property): void {
         if (node.leaf) {
             let index: number = this.upper_bound(node.keys, key);
@@ -103,7 +103,7 @@ export class B_Plus_Tree {
         }
     }
 
-    //Time Complexity: WIP
+    //Time Complexity: O(k + log n); k is defined above
     insert(key: Property): void {
         if (this.root == null) {
             this.root = new B_Plus_Tree_Node(true);
@@ -125,7 +125,7 @@ export class B_Plus_Tree {
     // These Methods Contribute to printing the tree
     // Private Method Performs Operation Recursively and printTree() calls it
 
-    //Time Complexity: WIP
+    //Time Complexity: O(n)
     private printTreeHelper(node: B_Plus_Tree_Node, level: number): void {
         if (node != null) {
 
@@ -143,7 +143,7 @@ export class B_Plus_Tree {
         }
     }
 
-    //Time Complexity: WIP
+    //Time Complexity: O(n)
     printTree(): void {
         if (this.root == null){
             return;
@@ -156,7 +156,7 @@ export class B_Plus_Tree {
 
     // Perform Filter Operations
 
-    //Time Complexity: WIP
+    //Time Complexity: O(log n + m log m); m is the size of the resulting vector
     private search_by_price(key: number): Property[] {
         
         let result: Property[] = [];
@@ -203,7 +203,7 @@ export class B_Plus_Tree {
         return result;
     }
 
-    //Time Complexity: WIP
+    //Time Complexity: O(n)
     private search_by_land_size(key: Property[], size: number): Property[] {
 
         let result: Property[] = [];
@@ -231,7 +231,7 @@ export class B_Plus_Tree {
         return result;
     }
 
-    //Time Complexity: WIP
+    //Time Complexity: O(n)
     private remove_unassigned(key: Property[], remove: boolean): Property[] {
 
         let result: Property[] = [];
@@ -263,7 +263,7 @@ export class B_Plus_Tree {
         return result;
     }
 
-    //Time Complexity: WIP
+    //Time Complexity: O(n + log n + m log m); m is defined above
     filter(min_price: number, min_size: number, remove: boolean): Property[] {
         let result: Property[] =  this.search_by_price(min_price);
         result = this.search_by_land_size(result, min_size);
@@ -276,12 +276,12 @@ export class B_Plus_Tree {
 
     // Functions to Get Averages
 
-    //Time Complexity: WIP
+    //Time Complexity: O(1)
     get_price_average(): bigint{
         return this.price_average;
     } 
 
-    //Time Complexity: WIP
+    //Time Complexity: O(1)
     get_land_average(): bigint{
         return this.land_average;
     } 
