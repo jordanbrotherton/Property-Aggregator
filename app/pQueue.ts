@@ -1,18 +1,16 @@
 import { Property } from './property';
 
-//generic class, holds any type (ex: X)
 export class MaxHeap{
 
-    //Attributes for Averages
+    // Attributes for Averages
     private price_average: bigint = BigInt(0);
     private land_average: bigint = BigInt(0);
 
-    //internal arrays; One is the actual array. The other is for filters to modify
+    // Internal arrays of Heap; One is an unchanged Heap; The other is modified in Filters
     private stored_heap: Property[] = [];
     private heap: Property[] = [];
 
-    //
-    //HEAP NAVIGATION METHODS
+    // HEAP NAVIGATION METHODS
     private parent(index: number) : number {
         return Math.floor((index-1)/2);
     }
@@ -175,7 +173,7 @@ export class MaxHeap{
 
         if(remove){
         for (const data of key) {
-            if(data.address != "UNASSIGNED LOCATION RE"){
+            if(data.address != "UNASSIGNED LOCATION RE" && data.address != "UNASSIGNED"){
                 result.push(data);
                     if(!isNaN(data.price))
                     price += BigInt(data.price);

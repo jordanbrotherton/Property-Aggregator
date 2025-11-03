@@ -20,7 +20,7 @@ class B_Plus_Tree_Node{
 
 export class B_Plus_Tree {
 
-    //Properties of the B+ Tree Along with Data on Averages 
+    // Properties of the B+ Tree Along with Data on Averages 
     private root: B_Plus_Tree_Node | null = null;
     private price_average: bigint = BigInt(0);
     private land_average: bigint = BigInt(0);
@@ -30,8 +30,8 @@ export class B_Plus_Tree {
         this.Order = order;
     }
 
-    //All of these methods contribute to Inserting in the B+ Tree
-    //The Private Methods are opearations a B+ Tree Performs during Insertion
+    // All of these methods contribute to Inserting in the B+ Tree
+    // The Private Methods are opearations a B+ Tree Performs during Insertion
     private upper_bound(arr: Property[], value: Property): number {
         let low = 0;
         let high = arr.length;
@@ -108,8 +108,8 @@ export class B_Plus_Tree {
         }
     }
 
-    //These Methods Contribute to printing the tree
-    //Private Method Performs Operation Recursively and printTree() calls it
+    // These Methods Contribute to printing the tree
+    // Private Method Performs Operation Recursively and printTree() calls it
     private printTreeHelper(node: B_Plus_Tree_Node, level: number): void {
         if (node != null) {
 
@@ -135,6 +135,7 @@ export class B_Plus_Tree {
 
     // Perform Filter Operations
     private search_by_price(key: number): Property[] {
+        
         let result: Property[] = [];
         let current: B_Plus_Tree_Node | null = this.root;
 
@@ -212,7 +213,7 @@ export class B_Plus_Tree {
 
         if(remove){
         for (const data of key) {
-            if(data.address != "UNASSIGNED LOCATION RE"){
+            if(data.address != "UNASSIGNED LOCATION RE" && data.address != "UNASSIGNED"){
                 result.push(data);
                     if(!isNaN(data.price))
                     price += BigInt(data.price);
@@ -235,7 +236,6 @@ export class B_Plus_Tree {
         return result;
     }
     filter(min_price: number, min_size: number, remove: boolean): Property[] {
-
         let result: Property[] =  this.search_by_price(min_price);
         result = this.search_by_land_size(result, min_size);
         result = this.remove_unassigned(result, remove);
