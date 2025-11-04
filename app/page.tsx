@@ -35,6 +35,7 @@ interface AssessorRecord {
   JV: number;
 }
 
+// Read the provided csv and constructs tree and maxheap to return for later use
 function GetData(filePath: string) {
   const [bPlus, setBPlus] = useState<B_Plus_Tree>(new B_Plus_Tree(1000));
   const [heap, setHeap] = useState<MaxHeap>(new MaxHeap());
@@ -61,6 +62,7 @@ function GetData(filePath: string) {
       return records;
     }
 
+    //executes data load and structure build
     readCsvFile(filePath).then(data => {
       console.log(`Parsed ${data.length} records.`);
 
@@ -96,6 +98,7 @@ function GetData(filePath: string) {
   return [bPlus, heap];
 }
 
+//Filter data from the B+ Tree or the MaxHeap depending on user criteria
 function FilterData(minimumPrice: number, minimumSize: number, noUnassigned: boolean, structsArray: Array<B_Plus_Tree | MaxHeap>, usingBPlus: boolean) {
   let startTime = performance.now();
 
@@ -121,6 +124,7 @@ function FilterData(minimumPrice: number, minimumSize: number, noUnassigned: boo
   return filteredArray
 }
 
+//GLOBAL VARIABLES
 let loaded = false;
 
 let minPrice: number = 0;
@@ -138,6 +142,7 @@ let hFilterPerf: number = 0;
 
 let maxPage: number = 1;
 
+//Home Component (Primary User Interface)
 export default function Home() {
   function UpdateFilter(){
     setProperties(FilterData(minPrice, minSize, removeUnassigned, structs, usingBPlus)); 
