@@ -51,7 +51,8 @@ export class MaxHeap{
     //HEAP MAINTANANCE METHODS
     //restore max heap property ater insertion
     //Each heap operates on a different array so that filter can run optimally
-    //Time Complexity: O(logn)
+    
+    //Time Complexity: O(log n)
     private heapify_up() {
         let index = this.stored_heap.length - 1;
         while (this.parent(index) >= 0 && this.stored_heap[this.parent(index)].price < this.stored_heap[index].price) {
@@ -59,9 +60,8 @@ export class MaxHeap{
             index = this.parent(index);
         }
     }
-
-    //Time Complexity: O(logn)
-    //restore max heap property following extraction
+    
+    //Time Complexity: O(log n)
     private heapify_down() {
         let index = 0;
         let n = this.heap.length;
@@ -93,15 +93,17 @@ export class MaxHeap{
 
 
 
-    //CORE QUEUE OPERATIONS
+
+    //CORE QUEUE OPS
+
+    //Time Complexity: O(log n)
     insert(value: Property): void { //insert new item into queue
         this.stored_heap.push(value);
         this.heapify_up();
     }
 
-
-    //Time Complexity: O(logn)
     //Only works on our array to manipulate
+    //Time Complexity: O(log n)
     extractMaximum(): Property | undefined { //get rid of highest priority element
         const n = this.heap.length;
         if (n === 0) {
@@ -116,9 +118,8 @@ export class MaxHeap{
         return top;
     }
 
-
-    //Time Complexity: O(1)
     //Peeks our actual heap
+    //Time Complexity: O(1)
     peek(): Property | undefined { //just return the highest priority
         if (this.stored_heap.length === 0) {
             return undefined;
@@ -151,11 +152,13 @@ export class MaxHeap{
         }
     }
 
+    
 
 
     //FILTER AND SEARCH TOOLS
-    private search_by_price(key: number): Property[] { //sort by price (ascending) for easier interpretation
 
+    //Time Complexity: O(n log n + m log m); m is number of values in the result array
+    private search_by_price(key: number): Property[] { //sort by price (ascending) for easier interpretation
         let result: Property[] = [];
         while (this.heap.length > 0) {
             const top = this.peek_heap_internal();
@@ -167,8 +170,9 @@ export class MaxHeap{
         return result.sort((a, b) => a.price - b.price);
     }
 
-
+    //Time Complexity: O(n)
     private search_by_land_size(key: Property[], size: number): Property[] {
+
         //Array to Hold Result From Filter
         let result: Property[] = [];
         let price: bigint = BigInt(0);
@@ -227,9 +231,7 @@ export class MaxHeap{
         return result;
     }
 
-
-
-
+    //Time Complexity: O(n log n + m log m + n); m is above
     filter(min_price: number, min_size: number, remove: boolean): Property[] { //combined filtering
         this.heap = [...this.stored_heap];
         let result: Property[] =  this.search_by_price(min_price);
@@ -240,10 +242,15 @@ export class MaxHeap{
 
 
 
+    
     // Operations to Get Averages to Display 
+
+    //Time Complexity: O(1)
     get_price_average(): bigint{
         return this.price_average;
     } 
+
+    //Time Complexity: O(1)
     get_land_average(): bigint{
         return this.land_average;
     } 
