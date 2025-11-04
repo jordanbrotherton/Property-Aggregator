@@ -6,6 +6,7 @@ import { MaxHeap } from "./pQueue";
 import { Property } from './property';
 import { parse } from 'csv-parse';
 
+// Time Complexity: O(1)
 function PropertyView({ property }: { property: Property }) {
   /* 
     A basic property view card.
@@ -35,6 +36,7 @@ interface AssessorRecord {
   JV: number;
 }
 
+//Time Complexity: O(nlogn) 
 // Read the provided csv and constructs tree and maxheap to return for later use
 function GetData(filePath: string) {
   const [bPlus, setBPlus] = useState<B_Plus_Tree>(new B_Plus_Tree(1000));
@@ -98,6 +100,7 @@ function GetData(filePath: string) {
   return [bPlus, heap];
 }
 
+//Time Complexity: O(n)
 //Filter data from the B+ Tree or the MaxHeap depending on user criteria
 function FilterData(minimumPrice: number, minimumSize: number, noUnassigned: boolean, structsArray: Array<B_Plus_Tree | MaxHeap>, usingBPlus: boolean) {
   let startTime = performance.now();
@@ -141,6 +144,7 @@ let hCreatePerf: number = 0;
 let hFilterPerf: number = 0;
 
 let maxPage: number = 1;
+
 
 //Home Component (Primary User Interface)
 export default function Home() {
